@@ -1,0 +1,53 @@
+/* URL Shortener TUI — Stylesheet */
+
+Screen {
+    background: $background;
+}
+
+Header {
+    dock: top;
+}
+
+Footer {
+    dock: bottom;
+}
+
+/* Data table styling */
+DataTable {
+    height: 1fr;
+    margin: 0 1;
+}
+
+DataTable > .datatable--header {
+    text-style: bold;
+    color: $accent;
+}
+
+DataTable > .datatable--cursor {
+    background: $accent;
+    color: $text;
+}
+
+/* Modal overlay */
+ModalScreen {
+    background: $background 60%;
+}
+
+/* Input fields */
+Input {
+    margin: 0 0 0 0;
+}
+
+Input:focus {
+    border: tall $accent;
+}
+
+/* Buttons */
+Button {
+    min-width: 12;
+}
+
+/* Switch styling */
+Switch {
+    margin: 0 1;
+}
