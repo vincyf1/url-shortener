@@ -1,0 +1,26 @@
+[project]
+name = "url-shortener-tui"
+version = "0.1.0"
+description = "Terminal URL shortener with Textual UI and redirect server"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+  "textual>=0.47,<1.0",
+  "pyperclip>=1.8.0",
+]
+
+[project.optional-dependencies]
+postgres = [
+  "psycopg[binary]>=3.2",
+]
+mysql = [
+  "pymysql>=1.1",
+]
+
+[dependency-groups]
+dev = [
+  "pytest>=8.0",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

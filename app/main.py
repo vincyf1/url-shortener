@@ -32,13 +32,14 @@ class URLShortenerApp(App):
     }
 
     BINDINGS = [
+        Binding("h", "open_help", "Help", priority=True),
         Binding("ctrl+q", "quit", "Quit", priority=True),
         Binding("ctrl+c", "quit", "Quit", show=False, priority=True),
     ]
 
-    def __init__(self, db_path=None, **kwargs):
+    def __init__(self, db_path=None, db_backend=None, db_dsn=None, **kwargs):
         super().__init__(**kwargs)
-        self.db = Database(db_path=db_path)
+        self.db = Database(db_path=db_path, backend=db_backend, dsn=db_dsn)
         self._server: Optional[RedirectServer] = None
 
     def on_mount(self) -> None:
@@ -63,7 +64,12 @@ class URLShortenerApp(App):
         except ValueError:
             port = 8080
 
-        self._server = RedirectServer(port=port, db_path=self.db.db_path)
+        self._server = RedirectServer(
+            port=port,
+            db_path=self.db.db_path,
+            db_backend=self.db.backend,
+            db_dsn=self.db.dsn,
+        )
         try:
             self._server.start()
         except OSError as e:
@@ -102,7 +108,10 @@ class URLShortenerApp(App):
         # Restart if enabled
         if server_enabled:
             self._server = RedirectServer(
-                port=new_port, db_path=self.db.db_path
+                port=new_port,
+                db_path=self.db.db_path,
+                db_backend=self.db.backend,
+                db_dsn=self.db.dsn,
             )
             try:
                 self._server.start()
@@ -122,6 +131,11 @@ class URLShortenerApp(App):
             self.notify("Server disabled", title="Settings Applied")
 
         self._update_server_status()
+
+    def action_open_help(self) -> None:
+        """Open universal help modal from any screen."""
+        from .screens.help import HelpModal
+        self.push_screen(HelpModal())
 
     def on_unmount(self) -> None:
         """Clean up on exit."""

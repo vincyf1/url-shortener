@@ -6,7 +6,7 @@ Handles GET /<code> → 301 redirect to original URL.
 
 import logging
 import threading
-from http.server import HTTPServer, BaseHTTPRequestHandler
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from typing import Optional
 from pathlib import Path
 
@@ -18,8 +18,16 @@ logger = logging.getLogger(__name__)
 class RedirectHandler(BaseHTTPRequestHandler):
     """HTTP request handler that redirects short codes to original URLs."""
 
-    # Reference to the database path (set by RedirectServer)
+    # Backend configuration set by RedirectServer
     db_path: Optional[Path] = None
+    db_backend: Optional[str] = None
+    db_dsn: Optional[str] = None
+
+    def _send_security_headers(self) -> None:
+        """Send baseline security headers for all responses."""
+        self.send_header("X-Content-Type-Options", "nosniff")
+        self.send_header("Referrer-Policy", "no-referrer")
+        self.send_header("X-Frame-Options", "DENY")
 
     def do_GET(self) -> None:
         """Handle GET requests."""
@@ -34,8 +42,12 @@ class RedirectHandler(BaseHTTPRequestHandler):
         if "?" in path:
             path = path.split("?", 1)[0]
 
+        if path == "healthz":
+            self._send_healthz()
+            return
+
         # Look up the short code
-        db = Database(db_path=self.db_path)
+        db = Database(db_path=self.db_path, backend=self.db_backend, dsn=self.db_dsn)
         try:
             url_record = db.get_url_by_code(path)
             if url_record:
@@ -43,8 +55,9 @@ class RedirectHandler(BaseHTTPRequestHandler):
                 db.increment_click_count(path)
                 # Send 301 redirect
                 self.send_response(301)
+                self._send_security_headers()
                 self.send_header("Location", url_record["original_url"])
-                self.send_header("Cache-Control", "no-cache")
+                self.send_header("Cache-Control", "no-store")
                 self.end_headers()
             else:
                 self._send_not_found(path)
@@ -63,10 +76,23 @@ class RedirectHandler(BaseHTTPRequestHandler):
 </body>
 </html>"""
         self.send_response(200)
+        self._send_security_headers()
         self.send_header("Content-Type", "text/html; charset=utf-8")
+        self.send_header("Cache-Control", "no-store")
         self.send_header("Content-Length", str(len(html.encode())))
         self.end_headers()
         self.wfile.write(html.encode())
+
+    def _send_healthz(self) -> None:
+        """Send an application health response."""
+        body = b"ok"
+        self.send_response(200)
+        self._send_security_headers()
+        self.send_header("Content-Type", "text/plain; charset=utf-8")
+        self.send_header("Cache-Control", "no-store")
+        self.send_header("Content-Length", str(len(body)))
+        self.end_headers()
+        self.wfile.write(body)
 
     def _send_not_found(self, code: str) -> None:
         """Send a 404 response."""
@@ -79,7 +105,9 @@ class RedirectHandler(BaseHTTPRequestHandler):
 </body>
 </html>"""
         self.send_response(404)
+        self._send_security_headers()
         self.send_header("Content-Type", "text/html; charset=utf-8")
+        self.send_header("Cache-Control", "no-store")
         self.send_header("Content-Length", str(len(html.encode())))
         self.end_headers()
         self.wfile.write(html.encode())
@@ -95,10 +123,18 @@ class RedirectServer:
     Runs as a daemon thread that dies when the main application exits.
     """
 
-    def __init__(self, port: int = 8080, db_path: Optional[Path] = None):
+    def __init__(
+        self,
+        port: int = 8080,
+        db_path: Optional[Path] = None,
+        db_backend: Optional[str] = None,
+        db_dsn: Optional[str] = None,
+    ):
         self.port = port
         self.db_path = db_path
-        self._server: Optional[HTTPServer] = None
+        self.db_backend = db_backend
+        self.db_dsn = db_dsn
+        self._server: Optional[ThreadingHTTPServer] = None
         self._thread: Optional[threading.Thread] = None
         self._running = False
         self._error: Optional[str] = None
@@ -126,9 +162,11 @@ class RedirectServer:
 
         # Set the DB path on the handler class
         RedirectHandler.db_path = self.db_path
+        RedirectHandler.db_backend = self.db_backend
+        RedirectHandler.db_dsn = self.db_dsn
 
         try:
-            self._server = HTTPServer(("0.0.0.0", self.port), RedirectHandler)
+            self._server = ThreadingHTTPServer(("0.0.0.0", self.port), RedirectHandler)
         except OSError as e:
             self._error = str(e)
             raise

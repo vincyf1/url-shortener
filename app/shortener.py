@@ -88,6 +88,32 @@ def validate_url(url: str) -> str:
     return url
 
 
+def validate_base_url(base_url: str) -> str:
+    """Validate and normalise base URL used for generated short links.
+
+    Accepts only absolute http/https URLs.
+    """
+    if not base_url or not base_url.strip():
+        raise InvalidURLError("Base URL cannot be empty.")
+
+    cleaned = base_url.strip().rstrip("/")
+    parsed = urlparse(cleaned)
+
+    if parsed.scheme.lower() not in ALLOWED_SCHEMES:
+        raise InvalidURLError("Base URL must start with http:// or https://.")
+
+    if not parsed.netloc:
+        raise InvalidURLError("Base URL must include a hostname.")
+
+    if parsed.query or parsed.fragment:
+        raise InvalidURLError("Base URL cannot include query parameters or fragments.")
+
+    if len(cleaned) > 2048:
+        raise InvalidURLError("Base URL is too long (max 2048 characters).")
+
+    return cleaned
+
+
 def validate_custom_code(code: str) -> str:
     """Validate a custom short code.
 

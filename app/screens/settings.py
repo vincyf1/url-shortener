@@ -8,6 +8,7 @@ from textual.screen import ModalScreen
 from textual.widgets import Button, Input, Label, Switch
 
 from ..database import Database
+from ..shortener import InvalidURLError, validate_base_url
 
 
 class SettingsModal(ModalScreen[Optional[dict]]):
@@ -133,12 +134,11 @@ class SettingsModal(ModalScreen[Optional[dict]]):
             return
 
         # Validate base URL
-        if not base_url:
-            self._show_error("Base URL cannot be empty.")
+        try:
+            base_url = validate_base_url(base_url)
+        except InvalidURLError as exc:
+            self._show_error(str(exc))
             return
-
-        # Strip trailing slash
-        base_url = base_url.rstrip("/")
 
         # Save to database
         self.db.set_setting("server_port", str(port))

@@ -1,6 +1,6 @@
 import socket
 from pathlib import Path
-from urllib.request import build_opener, HTTPRedirectHandler, Request
+from urllib.request import build_opener, HTTPRedirectHandler, Request, urlopen
 from urllib.error import HTTPError
 
 from app.database import Database
@@ -38,6 +38,8 @@ def test_redirect_behavior(tmp_path: Path):
         except HTTPError as e:
             assert e.code == 301
             assert e.headers["Location"] == "https://example.com/target"
+            assert e.headers["X-Content-Type-Options"] == "nosniff"
+            assert e.headers["Referrer-Policy"] == "no-referrer"
 
         # Missing code => 404
         req_missing = Request(f"http://127.0.0.1:{port}/missing")
@@ -46,11 +48,30 @@ def test_redirect_behavior(tmp_path: Path):
             raise AssertionError("Expected 404 response")
         except HTTPError as e:
             assert e.code == 404
+            assert e.headers["X-Frame-Options"] == "DENY"
 
         # Click count incremented
         updated = db.get_url_by_code("go")
         assert updated is not None
         assert updated["click_count"] == 1
+    finally:
+        server.stop()
+        db.close()
+
+
+def test_healthz_endpoint(tmp_path: Path):
+    db_path = tmp_path / "urls.db"
+    db = Database(db_path=db_path)
+
+    port = _free_port()
+    server = RedirectServer(port=port, db_path=db_path)
+    server.start()
+    try:
+        response = urlopen(f"http://127.0.0.1:{port}/healthz")
+        body = response.read().decode("utf-8")
+        assert response.status == 200
+        assert body == "ok"
+        assert response.headers["Cache-Control"] == "no-store"
     finally:
         server.stop()
         db.close()

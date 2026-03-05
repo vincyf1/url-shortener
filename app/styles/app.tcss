@@ -1,53 +1,88 @@
-/* URL Shortener TUI — Stylesheet */
+/* URL Shortener TUI — Modern high-contrast theme */
 
 Screen {
-    background: $background;
+    background: #0b1220;
+    color: #f8fafc;
 }
 
 Header {
     dock: top;
+    background: #111827;
+    color: #e2e8f0;
+    text-style: bold;
 }
 
 Footer {
     dock: bottom;
+    background: #0f172a;
+    color: #cbd5e1;
 }
 
-/* Data table styling */
 DataTable {
     height: 1fr;
     margin: 0 1;
+    background: #0f172a;
+    color: #e2e8f0;
+    border: round #334155;
 }
 
 DataTable > .datatable--header {
+    background: #1e293b;
+    color: #67e8f9;
     text-style: bold;
-    color: $accent;
 }
 
 DataTable > .datatable--cursor {
-    background: $accent;
-    color: $text;
+    background: #22d3ee;
+    color: #0b1220;
+    text-style: bold;
 }
 
-/* Modal overlay */
+DataTable > .datatable--hover {
+    background: #1f2937;
+}
+
 ModalScreen {
-    background: $background 60%;
+    background: #020617 82%;
 }
 
-/* Input fields */
 Input {
-    margin: 0 0 0 0;
+    margin: 0;
+    background: #0b1220;
+    color: #f8fafc;
+    border: round #334155;
 }
 
 Input:focus {
-    border: tall $accent;
+    border: tall #22d3ee;
 }
 
-/* Buttons */
 Button {
     min-width: 12;
 }
 
-/* Switch styling */
+Button.-primary {
+    background: #06b6d4;
+    color: #0b1220;
+    text-style: bold;
+}
+
+Button.-warning {
+    background: #f59e0b;
+    color: #0b1220;
+}
+
+Button.-error {
+    background: #ef4444;
+    color: #ffffff;
+    text-style: bold;
+}
+
+Button.-default {
+    background: #334155;
+    color: #e2e8f0;
+}
+
 Switch {
     margin: 0 1;
 }

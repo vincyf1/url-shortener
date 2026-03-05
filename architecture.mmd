@@ -1,0 +1,33 @@
+flowchart LR
+    subgraph UI[Presentation]
+      TUI[Textual TUI\nURLShortenerApp + Screens]
+      HTTP[Redirect HTTP Server\nRedirectServer/RedirectHandler]
+    end
+
+    subgraph Domain[Domain / Service]
+      SVC[shortener.py\nvalidate_url + create_short_url]
+    end
+
+    subgraph RepoBoundary[Repository Boundary]
+      IFACE[URLRepository (interface)\n+ URLRecord/AppSetting dataclasses]
+      FACADE[Database facade\nresolve_storage_config(DB_BACKEND)]
+    end
+
+    subgraph Adapters[Storage Adapters]
+      SQLITE[SQLiteRepository\n(app/adapters/sqlite_repository.py)]
+      PG[PostgreSQLRepository\n(app/adapters/postgres_repository.py)]
+      MY[MySQLRepository\n(app/adapters/mysql_repository.py)]
+    end
+
+    TUI --> SVC
+    TUI --> FACADE
+    HTTP --> FACADE
+    SVC --> IFACE
+    FACADE --> IFACE
+    IFACE --> SQLITE
+    IFACE --> PG
+    IFACE --> MY
+
+    SQLITE --> SDB[(SQLite urls.db)]
+    PG --> PDB[(PostgreSQL)]
+    MY --> MDB[(MySQL)]

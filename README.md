@@ -10,86 +10,80 @@ A terminal-based URL shortener with a built-in HTTP redirect server, built with 
 - **Edit** and **delete** URLs with confirmation dialogs
 - **Built-in redirect server** — handles `GET /<code>` → 301 redirect
 - **Settings** — configurable port, base URL, server toggle
+- **Universal Help** (`h`) — available from main workflows with all operations documented
 - **Secure** — uses `secrets.choice()` for cryptographically random codes
-- **Persistent** — SQLite database with WAL mode for safe concurrent access
+- **Persistent** — pluggable storage backend via repository interface
+- **Backends** — SQLite (default), PostgreSQL, or MySQL via `DB_BACKEND`
 - **Clipboard** — copies short URLs to clipboard (via pyperclip, with fallback)
 
-## Quick Start
+## Quick Start (uv-first)
 
 ```bash
-# Create a virtual environment
-python3 -m venv .venv
+# 1) Install dependencies and create .venv
+uv sync --dev
 
-# Install dependencies into the venv interpreter
-.venv/bin/python -m pip install -r requirements.txt
-
-# Run the app
-.venv/bin/python run.py
+# 2) Run the TUI
+uv run python run.py
 ```
 
-## Test / Validation Steps
+## Development Workflow
 
 ```bash
-# Install test dependency
-.venv/bin/python -m pip install pytest
-
-# Run test suite
-.venv/bin/python -m pytest -q
+# Run tests
+uv run python -m pytest -q
 
 # Optional TUI smoke run (Ctrl+Q to exit)
-.venv/bin/python run.py
+uv run python run.py
 ```
-
-Current automated coverage includes:
-- import/startup smoke checks
-- create/list/detail/edit/delete/search/settings core flows (database-backed)
-- redirect server behavior (`GET /<code>` => `301`, missing code => `404`, click increment)
-- `run.py` launcher wiring
 
 ## Keyboard Shortcuts
 
-| Key     | Action           |
-|---------|------------------|
-| `n`     | Create new URL   |
-| `Enter` | View URL details |
-| `d`     | Delete URL       |
-| `/`     | Search/filter    |
-| `Esc`   | Clear search     |
-| `s`     | Settings         |
-| `r`     | Refresh list     |
-| `q`     | Quit             |
+| Key      | Action           |
+|----------|------------------|
+| `n`      | Create new URL   |
+| `Enter`  | View URL details |
+| `d`      | Delete URL       |
+| `/`      | Search/filter    |
+| `Esc`    | Clear search / close modal |
+| `s`      | Settings         |
+| `h`      | Help (all operations) |
+| `r`      | Refresh list     |
+| `q`      | Quit             |
+| `Ctrl+Q` | Quit             |
+
+## Terminal Theme & Font Guidance
+
+- The app ships with a **modern high-contrast dark theme** tuned for readability.
+- Recommended font (optional): **Nerd Font Mono** (for cleaner symbol alignment).
+- Any readable monospaced font works; Nerd Mono is *not required*.
 
 ## Architecture
 
-```
-┌─────────────────────────────────┐
-│       Textual TUI App           │
-│  ┌──────────┐  ┌────────────┐  │
-│  │ URL List  │  │ Create URL │  │
-│  │ Screen    │  │ Modal      │  │
-│  ├──────────┤  ├────────────┤  │
-│  │ Detail   │  │ Settings   │  │
-│  │ Modal    │  │ Modal      │  │
-│  └──────────┘  └────────────┘  │
-│        │                        │
-│   ┌────┴─────┐                 │
-│   │ SQLite   │ (WAL mode)     │
-│   └────┬─────┘                 │
-│        │                        │
-│  ┌─────┴──────────┐           │
-│  │ Redirect Server │ (daemon) │
-│  │ (http.server)   │          │
-│  └────────────────┘           │
-└─────────────────────────────────┘
-```
+See `architecture.mmd` for the Mermaid architecture diagram (domain/service/repository boundary + SQLite/PostgreSQL/MySQL adapters + TUI/redirect interactions).
 
-## Data Storage
+Render options:
+- Mermaid Live: paste file contents into https://mermaid.live
+- CLI: `npx @mermaid-js/mermaid-cli -i architecture.mmd -o architecture.svg`
 
-The SQLite database is stored at `~/.local/share/url-shortener/urls.db`.
+## Data Storage & Backend Selection
 
-Override with the `URL_SHORTENER_DATA_DIR` environment variable:
+Default backend is SQLite (`DB_BACKEND=sqlite`).
+
 ```bash
-URL_SHORTENER_DATA_DIR=/tmp/my-urls python run.py
+# SQLite (default)
+DB_BACKEND=sqlite URL_SHORTENER_DATA_DIR=/tmp/my-urls uv run python run.py
+
+# PostgreSQL
+DB_BACKEND=postgres POSTGRES_DSN='postgresql://user:pass@localhost:5432/urlshortener' uv run python run.py
+
+# MySQL
+DB_BACKEND=mysql MYSQL_DSN='mysql://user:pass@localhost:3306/urlshortener' uv run python run.py
+```
+
+Optional backend dependencies:
+```bash
+uv sync --extra postgres
+uv sync --extra mysql
 ```
 
 ## Redirect Server
@@ -97,6 +91,21 @@ URL_SHORTENER_DATA_DIR=/tmp/my-urls python run.py
 By default, an HTTP redirect server starts on port **8080**. When someone visits `http://localhost:8080/<code>`, they're redirected (301) to the original URL, and the click count is incremented.
 
 Change the port and base URL in Settings (`s`).
+
+## Docker Profiles
+
+`docker-compose.yml` includes backend-specific profiles:
+
+```bash
+# SQLite
+docker compose --profile sqlite up --build
+
+# PostgreSQL
+docker compose --profile postgres up --build
+
+# MySQL
+docker compose --profile mysql up --build
+```
 
 ### Running Behind a Reverse Proxy
 

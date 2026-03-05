@@ -30,6 +30,7 @@ class URLListScreen(Screen):
         Binding("slash", "search", "Search"),
         Binding("escape", "clear_search", "Clear Search"),
         Binding("s", "open_settings", "Settings"),
+        Binding("h", "open_help", "Help"),
         Binding("r", "refresh", "Refresh"),
         Binding("q", "quit_app", "Quit"),
     ]
@@ -136,9 +137,9 @@ class URLListScreen(Screen):
         """Update the server status bar."""
         status = self.query_one("#server-status", Static)
         if running:
-            status.update(f"● Server running on port {port}")
+            status.update(f"● Server running on port {port}  |  Press h for help")
         else:
-            status.update("○ Server stopped")
+            status.update("○ Server stopped  |  Press h for help")
 
     # --- Actions ---
 
@@ -260,6 +261,10 @@ class URLListScreen(Screen):
         if result:
             # Settings changed — the app will handle restarting the server
             self.app.apply_settings(result)
+
+    def action_open_help(self) -> None:
+        """Open universal help modal."""
+        self.app.action_open_help()
 
     def action_refresh(self) -> None:
         """Refresh the URL list."""
