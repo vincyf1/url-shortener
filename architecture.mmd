@@ -1,33 +1,34 @@
 flowchart LR
-    subgraph UI[Presentation]
-      TUI[Textual TUI\nURLShortenerApp + Screens]
-      HTTP[Redirect HTTP Server\nRedirectServer/RedirectHandler]
-    end
+  subgraph Presentation
+    TUI["Textual TUI<br/>URLShortenerApp and Screens"]
+    HTTP["Redirect HTTP Server<br/>RedirectServer and RedirectHandler"]
+  end
 
-    subgraph Domain[Domain / Service]
-      SVC[shortener.py\nvalidate_url + create_short_url]
-    end
+  subgraph Domain_Service
+    SVC["Shortener Service<br/>validate_url and create_short_url"]
+  end
 
-    subgraph RepoBoundary[Repository Boundary]
-      IFACE[URLRepository (interface)\n+ URLRecord/AppSetting dataclasses]
-      FACADE[Database facade\nresolve_storage_config(DB_BACKEND)]
-    end
+  subgraph Repository_Boundary
+    IFACE["URLRepository interface<br/>URLRecord and AppSetting dataclasses"]
+    FACADE["Database facade<br/>resolve_storage_config by DB_BACKEND"]
+  end
 
-    subgraph Adapters[Storage Adapters]
-      SQLITE[SQLiteRepository\n(app/adapters/sqlite_repository.py)]
-      PG[PostgreSQLRepository\n(app/adapters/postgres_repository.py)]
-      MY[MySQLRepository\n(app/adapters/mysql_repository.py)]
-    end
+  subgraph Storage_Adapters
+    SQLITE["SQLiteRepository"]
+    PG["PostgreSQLRepository"]
+    MY["MySQLRepository"]
+  end
 
-    TUI --> SVC
-    TUI --> FACADE
-    HTTP --> FACADE
-    SVC --> IFACE
-    FACADE --> IFACE
-    IFACE --> SQLITE
-    IFACE --> PG
-    IFACE --> MY
+  TUI --> SVC
+  TUI --> FACADE
+  HTTP --> FACADE
+  SVC --> IFACE
+  FACADE --> IFACE
 
-    SQLITE --> SDB[(SQLite urls.db)]
-    PG --> PDB[(PostgreSQL)]
-    MY --> MDB[(MySQL)]
+  SQLITE --> IFACE
+  PG --> IFACE
+  MY --> IFACE
+
+  SQLITE --> SDB[(SQLite urls.db)]
+  PG --> PDB[(PostgreSQL)]
+  MY --> MDB[(MySQL)]
