@@ -20,6 +20,8 @@ A terminal-based URL shortener with a built-in HTTP redirect server, built with 
 
 ![URL Shortener TUI](docs/images/tui-screenshot.jpg)
 
+![URL Shortener Help Modal](docs/images/tui-help-screenshot.jpg)
+
 ## Quick Start (uv-first)
 
 ```bash
