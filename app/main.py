@@ -93,7 +93,7 @@ class URLShortenerApp(App):
                 port = self._server.port if self._server else 0
                 screen.update_server_status(running, port)
         except Exception:
-            pass
+            logger.exception("Failed to update server status")
 
     def apply_settings(self, settings: dict) -> None:
         """Apply changed settings (called from settings modal)."""

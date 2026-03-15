@@ -1,8 +1,11 @@
 """Clipboard helper with graceful fallback."""
 
-import subprocess
+import logging
 import shutil
+import subprocess
 import sys
+
+logger = logging.getLogger(__name__)
 
 
 def copy_to_clipboard(text: str) -> tuple[bool, str]:
@@ -10,16 +13,14 @@ def copy_to_clipboard(text: str) -> tuple[bool, str]:
 
     Returns (success, message).
     """
-    # Try pyperclip first
     try:
         import pyperclip  # type: ignore[import-untyped]
 
         pyperclip.copy(text)
         return True, "Copied to clipboard!"
     except Exception:
-        pass
+        logger.debug("pyperclip unavailable or failed", exc_info=True)
 
-    # Fallback: platform-specific commands
     if sys.platform == "darwin":
         cmd = "pbcopy"
     elif shutil.which("xclip"):
@@ -33,11 +34,16 @@ def copy_to_clipboard(text: str) -> tuple[bool, str]:
 
     try:
         proc = subprocess.Popen(
-            cmd, shell=True, stdin=subprocess.PIPE, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
+            cmd,
+            shell=True,
+            stdin=subprocess.PIPE,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
         )
         proc.communicate(text.encode(), timeout=3)
         if proc.returncode == 0:
             return True, "Copied to clipboard!"
         return False, f"Copy manually: {text}"
     except Exception:
+        logger.debug("clipboard command failed", exc_info=True)
         return False, f"Copy manually: {text}"
