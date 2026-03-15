@@ -129,3 +129,9 @@ server {
 ## License
 
 MIT
+
+## Project Policies
+
+- [Contributing](CONTRIBUTING.md)
+- [Security Policy](SECURITY.md)
+- [Release Checklist](RELEASE_CHECKLIST.md)
