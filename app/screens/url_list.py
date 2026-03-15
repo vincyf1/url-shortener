@@ -14,6 +14,19 @@ from textual.widgets import DataTable, Footer, Header, Input, Static
 from ..database import Database
 
 
+class URLDataTable(DataTable):
+    """Data table with local key bindings for high-frequency actions."""
+
+    BINDINGS = [
+        Binding("n", "new_url", "New URL", priority=True),
+    ]
+
+    def action_new_url(self) -> None:
+        screen = self.screen
+        if isinstance(screen, URLListScreen):
+            screen.action_new_url()
+
+
 class URLListScreen(Screen):
     """Main screen showing all shortened URLs in a table."""
 
@@ -71,7 +84,7 @@ class URLListScreen(Screen):
         yield Header(show_clock=True)
         with Vertical(id="search-bar"):
             yield Input(placeholder="Search URLs... (Esc to clear)", id="search-input")
-        yield DataTable(id="url-table")
+        yield URLDataTable(id="url-table")
         yield Static("No URLs yet. Press 'n' to create one.", id="empty-message")
         yield Static("", id="server-status")
         yield Footer()
@@ -81,8 +94,7 @@ class URLListScreen(Screen):
         table = self.query_one("#url-table", DataTable)
         table.cursor_type = "row"
         table.add_columns("Code", "Original URL", "Created", "Clicks")
-        # Keep focus on the screen so printable shortcuts like `n` are reliable.
-        self.set_focus(None)
+        self.set_focus(table)
         self.load_urls()
 
     @work(thread=True)
