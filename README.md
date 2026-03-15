@@ -16,6 +16,10 @@ A terminal-based URL shortener with a built-in HTTP redirect server, built with 
 - **Backends** — SQLite (default), PostgreSQL, or MySQL via `DB_BACKEND`
 - **Clipboard** — copies short URLs to clipboard (via pyperclip, with fallback)
 
+## Screenshot
+
+![URL Shortener TUI](docs/images/tui-screenshot.jpg)
+
 ## Quick Start (uv-first)
 
 ```bash
