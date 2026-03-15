@@ -135,3 +135,4 @@ MIT
 - [Contributing](CONTRIBUTING.md)
 - [Security Policy](SECURITY.md)
 - [Release Checklist](RELEASE_CHECKLIST.md)
+- [Community files](.github/COMMUNITY.md)
