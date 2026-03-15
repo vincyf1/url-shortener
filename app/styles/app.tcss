@@ -1,60 +1,60 @@
-/* URL Shortener TUI — Modern high-contrast theme */
+/* URL Shortener TUI — adaptive theme (dark/light aware) */
 
 Screen {
-    background: #0b1220;
-    color: #f8fafc;
+    background: $surface;
+    color: $text;
 }
 
 Header {
     dock: top;
-    background: #111827;
-    color: #e2e8f0;
+    background: $surface-darken-1;
+    color: $text;
     text-style: bold;
 }
 
 Footer {
     dock: bottom;
-    background: #0f172a;
-    color: #cbd5e1;
+    background: $surface-darken-1;
+    color: $text-muted;
 }
 
 DataTable {
     height: 1fr;
     margin: 0 1;
-    background: #0f172a;
-    color: #e2e8f0;
-    border: round #334155;
+    background: $surface;
+    color: $text;
+    border: round $primary;
 }
 
 DataTable > .datatable--header {
-    background: #1e293b;
-    color: #67e8f9;
+    background: $panel;
+    color: $accent;
     text-style: bold;
 }
 
 DataTable > .datatable--cursor {
-    background: #22d3ee;
-    color: #0b1220;
+    background: $accent;
+    color: $text;
     text-style: bold;
 }
 
 DataTable > .datatable--hover {
-    background: #1f2937;
+    background: $surface-lighten-1;
 }
 
 ModalScreen {
-    background: #020617 82%;
+    background: $background 82%;
 }
 
 Input {
     margin: 0;
-    background: #0b1220;
-    color: #f8fafc;
-    border: round #334155;
+    background: $surface;
+    color: $text;
+    border: round $primary;
 }
 
 Input:focus {
-    border: tall #22d3ee;
+    border: tall $accent;
 }
 
 Button {
@@ -62,25 +62,25 @@ Button {
 }
 
 Button.-primary {
-    background: #06b6d4;
-    color: #0b1220;
+    background: $accent;
+    color: $text;
     text-style: bold;
 }
 
 Button.-warning {
-    background: #f59e0b;
-    color: #0b1220;
+    background: $warning;
+    color: $text;
 }
 
 Button.-error {
-    background: #ef4444;
-    color: #ffffff;
+    background: $error;
+    color: $text;
     text-style: bold;
 }
 
 Button.-default {
-    background: #334155;
-    color: #e2e8f0;
+    background: $panel;
+    color: $text;
 }
 
 Switch {
