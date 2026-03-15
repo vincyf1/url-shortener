@@ -7,6 +7,7 @@ from textual import work
 from textual.app import ComposeResult
 from textual.binding import Binding
 from textual.containers import Vertical
+from textual.events import Key
 from textual.screen import Screen
 from textual.widgets import DataTable, Footer, Header, Input, Static
 
@@ -17,7 +18,7 @@ class URLListScreen(Screen):
     """Main screen showing all shortened URLs in a table."""
 
     BINDINGS = [
-        Binding("n", "new_url", "New URL"),
+        Binding("n", "new_url", "New URL", priority=True),
         Binding("d", "delete_url", "Delete"),
         Binding("enter", "view_detail", "Details"),
         Binding("slash", "search", "Search"),
@@ -80,6 +81,8 @@ class URLListScreen(Screen):
         table = self.query_one("#url-table", DataTable)
         table.cursor_type = "row"
         table.add_columns("Code", "Original URL", "Created", "Clicks")
+        # Keep focus on the screen so printable shortcuts like `n` are reliable.
+        self.set_focus(None)
         self.load_urls()
 
     @work(thread=True)
@@ -204,6 +207,12 @@ class URLListScreen(Screen):
 
     def _on_detail_closed(self, result: Optional[str]) -> None:
         self.load_urls()
+
+    def on_key(self, event: Key) -> None:
+        """Fallback key handler for printable shortcuts when table focus swallows bindings."""
+        if event.key == "n" and not isinstance(self.app.focused, Input):
+            self.action_new_url()
+            event.stop()
 
     def action_search(self) -> None:
         search_bar = self.query_one("#search-bar")

@@ -32,6 +32,7 @@ class URLShortenerApp(App):
     }
 
     BINDINGS = [
+        Binding("n", "new_url", "New URL", priority=True),
         Binding("h", "open_help", "Help", priority=True),
         Binding("ctrl+q", "quit", "Quit", priority=True),
         Binding("ctrl+c", "quit", "Quit", show=False, priority=True),
@@ -44,12 +45,11 @@ class URLShortenerApp(App):
 
     def on_mount(self) -> None:
         """Initialize the app: push main screen, start server."""
-        # Push the main URL list screen
         list_screen = URLListScreen(self.db)
         self.push_screen(list_screen)
 
-        # Start the redirect server if enabled
-        self._start_server_if_enabled()
+        # Start the redirect server after first render to avoid race with screen widgets.
+        self.call_after_refresh(self._start_server_if_enabled)
 
     def _start_server_if_enabled(self) -> None:
         """Start the redirect server based on settings."""
@@ -131,6 +131,12 @@ class URLShortenerApp(App):
             self.notify("Server disabled", title="Settings Applied")
 
         self._update_server_status()
+
+    def action_new_url(self) -> None:
+        """Open create URL modal from the active URL list screen."""
+        screen = self.screen
+        if isinstance(screen, URLListScreen):
+            screen.action_new_url()
 
     def action_open_help(self) -> None:
         """Open universal help modal from any screen."""
