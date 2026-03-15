@@ -39,6 +39,7 @@ DEFAULT_SETTINGS = {
     "server_port": "8080",
     "base_url": "http://localhost:8080",
     "server_enabled": "1",
+    "theme_dark": "1",
 }
 
 

@@ -68,3 +68,24 @@ def test_app_help_modal_accessible_from_main_screen(tmp_path: Path):
             await pilot.pause(0.1)
 
     asyncio.run(scenario())
+
+
+def test_theme_setting_applies_to_app(tmp_path: Path):
+    async def scenario():
+        app = URLShortenerApp(db_path=tmp_path / "urls.db")
+        app.db.set_setting("server_enabled", "0")
+        app.db.set_setting("theme_dark", "1")
+
+        async with app.run_test() as pilot:
+            await pilot.pause(0.2)
+            assert app.dark is True
+
+            app.apply_settings({
+                "server_enabled": False,
+                "server_port": 8080,
+                "theme_dark": False,
+            })
+            await pilot.pause(0.1)
+            assert app.dark is False
+
+    asyncio.run(scenario())

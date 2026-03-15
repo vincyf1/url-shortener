@@ -36,10 +36,12 @@ def test_create_list_detail_edit_delete_search_and_settings(tmp_path: Path):
     db.set_setting("server_port", "9090")
     db.set_setting("base_url", "http://localhost:9090")
     db.set_setting("server_enabled", "0")
+    db.set_setting("theme_dark", "0")
     settings = db.get_all_settings()
     assert settings["server_port"] == "9090"
     assert settings["base_url"] == "http://localhost:9090"
     assert settings["server_enabled"] == "0"
+    assert settings["theme_dark"] == "0"
 
     # delete
     deleted = db.delete_url("abc123")

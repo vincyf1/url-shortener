@@ -9,7 +9,7 @@ A terminal-based URL shortener with a built-in HTTP redirect server, built with 
 - **View** full details, click counts, and creation dates
 - **Edit** and **delete** URLs with confirmation dialogs
 - **Built-in redirect server** — handles `GET /<code>` → 301 redirect
-- **Settings** — configurable port, base URL, server toggle
+- **Settings** — configurable port, base URL, server toggle, dark/light theme toggle
 - **Universal Help** (`h`) — available from main workflows with all operations documented
 - **Secure** — uses `secrets.choice()` for cryptographically random codes
 - **Persistent** — pluggable storage backend via repository interface

@@ -21,7 +21,7 @@ class SettingsModal(ModalScreen[Optional[dict]]):
     #settings-dialog {
         width: 65;
         height: auto;
-        max-height: 22;
+        max-height: 24;
         border: thick $accent;
         background: $surface;
         padding: 1 2;
@@ -40,11 +40,13 @@ class SettingsModal(ModalScreen[Optional[dict]]):
         color: $text-disabled;
         margin-bottom: 0;
     }
-    #server-toggle-row {
+    #server-toggle-row,
+    #theme-toggle-row {
         height: 3;
         margin-top: 1;
     }
-    #server-toggle-row Label {
+    #server-toggle-row Label,
+    #theme-toggle-row Label {
         padding: 1 1;
     }
     #settings-error {
@@ -78,6 +80,7 @@ class SettingsModal(ModalScreen[Optional[dict]]):
         port = settings.get("server_port", "8080")
         base_url = settings.get("base_url", "http://localhost:8080")
         server_enabled = settings.get("server_enabled", "1") == "1"
+        theme_dark = settings.get("theme_dark", "1") == "1"
 
         with Vertical(id="settings-dialog"):
             yield Label("⚙ Settings", id="settings-title")
@@ -99,6 +102,10 @@ class SettingsModal(ModalScreen[Optional[dict]]):
             with Horizontal(id="server-toggle-row"):
                 yield Label("Server enabled:")
                 yield Switch(value=server_enabled, id="server-toggle")
+
+            with Horizontal(id="theme-toggle-row"):
+                yield Label("Dark theme:")
+                yield Switch(value=theme_dark, id="theme-toggle")
 
             yield Label("", id="settings-error")
 
@@ -123,6 +130,7 @@ class SettingsModal(ModalScreen[Optional[dict]]):
         port_str = self.query_one("#port-input", Input).value.strip()
         base_url = self.query_one("#base-url-input", Input).value.strip()
         server_enabled = self.query_one("#server-toggle", Switch).value
+        theme_dark = self.query_one("#theme-toggle", Switch).value
 
         # Validate port
         try:
@@ -144,11 +152,13 @@ class SettingsModal(ModalScreen[Optional[dict]]):
         self.db.set_setting("server_port", str(port))
         self.db.set_setting("base_url", base_url)
         self.db.set_setting("server_enabled", "1" if server_enabled else "0")
+        self.db.set_setting("theme_dark", "1" if theme_dark else "0")
 
         result = {
             "server_port": port,
             "base_url": base_url,
             "server_enabled": server_enabled,
+            "theme_dark": theme_dark,
         }
         self.dismiss(result)
 

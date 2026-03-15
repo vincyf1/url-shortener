@@ -44,7 +44,9 @@ class URLShortenerApp(App):
         self._server: Optional[RedirectServer] = None
 
     def on_mount(self) -> None:
-        """Initialize the app: push main screen, start server."""
+        """Initialize the app: apply theme, push main screen, start server."""
+        self._apply_theme_from_settings()
+
         list_screen = URLListScreen(self.db)
         self.push_screen(list_screen)
 
@@ -97,6 +99,8 @@ class URLShortenerApp(App):
 
     def apply_settings(self, settings: dict) -> None:
         """Apply changed settings (called from settings modal)."""
+        self._apply_theme_from_settings(settings)
+
         server_enabled = settings.get("server_enabled", True)
         new_port = settings.get("server_port", 8080)
 
@@ -131,6 +135,15 @@ class URLShortenerApp(App):
             self.notify("Server disabled", title="Settings Applied")
 
         self._update_server_status()
+
+    def _apply_theme_from_settings(self, settings: Optional[dict] = None) -> None:
+        """Apply persisted theme setting to the app."""
+        if settings is None:
+            dark = self.db.get_setting("theme_dark", "1") == "1"
+        else:
+            dark = bool(settings.get("theme_dark", True))
+
+        self.dark = dark
 
     def action_new_url(self) -> None:
         """Open create URL modal from the active URL list screen."""
