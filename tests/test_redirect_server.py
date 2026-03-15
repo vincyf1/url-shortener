@@ -75,3 +75,26 @@ def test_healthz_endpoint(tmp_path: Path):
     finally:
         server.stop()
         db.close()
+
+
+def test_healthz_returns_503_when_db_unreachable(tmp_path: Path, monkeypatch):
+    db_path = tmp_path / "urls.db"
+
+    class BrokenDatabase:
+        def __init__(self, *args, **kwargs):
+            raise RuntimeError("db unavailable")
+
+    monkeypatch.setattr("app.server.Database", BrokenDatabase)
+
+    port = _free_port()
+    server = RedirectServer(port=port, db_path=db_path)
+    server.start()
+    try:
+        try:
+            urlopen(f"http://127.0.0.1:{port}/healthz")
+            raise AssertionError("Expected 503 response")
+        except HTTPError as e:
+            assert e.code == 503
+            assert e.read().decode("utf-8") == "db_unhealthy"
+    finally:
+        server.stop()

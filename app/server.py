@@ -84,9 +84,26 @@ class RedirectHandler(BaseHTTPRequestHandler):
         self.wfile.write(html.encode())
 
     def _send_healthz(self) -> None:
-        """Send an application health response."""
+        """Send an application health response.
+
+        Health is considered "ok" when the backing database is reachable.
+        """
+        status_code = 200
         body = b"ok"
-        self.send_response(200)
+
+        db = None
+        try:
+            db = Database(db_path=self.db_path, backend=self.db_backend, dsn=self.db_dsn)
+            # Lightweight reachability probe.
+            db.get_setting("base_url", "")
+        except Exception:
+            status_code = 503
+            body = b"db_unhealthy"
+        finally:
+            if db is not None:
+                db.close()
+
+        self.send_response(status_code)
         self._send_security_headers()
         self.send_header("Content-Type", "text/plain; charset=utf-8")
         self.send_header("Cache-Control", "no-store")
