@@ -19,7 +19,7 @@ mysql = [
 
 [dependency-groups]
 dev = [
-  "pytest>=8.0",
+  "pytest>=9.0.3",
 ]
 
 [tool.pytest.ini_options]
